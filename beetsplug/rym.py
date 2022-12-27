@@ -59,11 +59,14 @@ class RymPlugin(plugins.BeetsPlugin):
             self._log.debug(f"skipping {artist} - {album_name} since rym_url is populated")
 
         if self.config['set_genre']:
-            album['genre'] = album['rym_genre']
-            album.store()
+            if album['genre'] != album['rym_genre']:
+                album['genre'] = album['rym_genre']
+                album.store()
+
             for item in album.items():
-                item['genre'] = album['rym_genre']
-                item.store()
+                if item['genre'] != album['rym_genre']:
+                    item['genre'] = album['rym_genre']
+                    item.store()
 
 
 def rym_query(artist, album, log):
