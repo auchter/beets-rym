@@ -11,6 +11,7 @@ class RymPlugin(plugins.BeetsPlugin):
     def __init__(self):
         super().__init__()
         config['rym'].add({
+            'auto': True,
             'google_api_key': '',
             'google_search_engine_id': '',
         })
@@ -22,6 +23,9 @@ class RymPlugin(plugins.BeetsPlugin):
             'rym_rating_count': types.INTEGER,
             'rym_rating_value': types.Float(2),
         }
+
+        if config['auto']:
+            self.register_listener('album_imported', self.import_rym)
 
     def commands(self):
         cmd = ui.Subcommand('rym', help='Import genres and ratings from RYM')
