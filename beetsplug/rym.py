@@ -12,6 +12,7 @@ class RymPlugin(plugins.BeetsPlugin):
         super().__init__()
         self.config.add({
             'auto': True,
+            'set_genre': False,
             'google_api_key': '',
             'google_search_engine_id': '',
         })
@@ -43,20 +44,26 @@ class RymPlugin(plugins.BeetsPlugin):
         artist = album['albumartist']
         album_name = album['album']
 
-        if album.get('rym_url', '') != '':
+        if album.get('rym_url', '') == '':
+            result = rym_query(artist, album_name, self._log)
+            if result is None:
+                self._log.warning(f"No result for {artist} - {album_name}")
+                return
+
+            album['rym_url'] = result['link']
+            album['rym_genre'] = result.get('albumgenre', '')
+            album['rym_rating_count'] = result.get('ratingcount', 0)
+            album['rym_rating_value'] = result.get('ratingvalue', 0.0)
+            album.store()
+        else:
             self._log.debug(f"skipping {artist} - {album_name} since rym_url is populated")
-            return
 
-        result = rym_query(artist, album_name, log)
-        if result is None:
-            self._log.warning(f"No result for {artist} - {album_name}")
-            return
-
-        album['rym_url'] = result['link']
-        album['rym_genre'] = result.get('albumgenre', '')
-        album['rym_rating_count'] = result.get('ratingcount', 0)
-        album['rym_rating_value'] = result.get('ratingvalue', 0.0)
-        album.store()
+        if self.config['set_genre']:
+            album['genre'] = album['rym_genre']
+            album.store()
+            for item in album.items():
+                item['genre'] = album['rym_genre']
+                item.store()
 
 
 def rym_query(artist, album, log):

@@ -48,5 +48,6 @@ Steps:
 In your config file, add a `[rym]` section. The following options are supported:
 
 - `auto` (default: `true`): Automatically fetch info for newly imported albums
+- `set_genre` (default: `false`): Set the `genre` tag on items and albums to `rym_genre`
 - `google_api_key`: The API key from the prior section
 - `google_search_engine_id`: The Search Engine ID from the prior section
