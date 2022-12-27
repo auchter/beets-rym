@@ -34,7 +34,6 @@ class RymPlugin(plugins.BeetsPlugin):
 
 
 def import_rym(lib, query, log):
-
     albums = lib.albums(query)
     for album in albums:
         artist = album['albumartist']
@@ -44,7 +43,7 @@ def import_rym(lib, query, log):
             log.warning(f"skipping {artist} - {album_name} since rym_url is populated")
             continue
 
-        result = rym_query(artist, album_name)
+        result = rym_query(artist, album_name, log)
         if result is None:
             log.warning(f"No result for {artist} - {album_name}")
             continue
@@ -55,7 +54,7 @@ def import_rym(lib, query, log):
         album.store()
 
 
-def rym_query(artist, album):
+def rym_query(artist, album, log):
     params = {
         'q': ' '.join([artist, album]),
         'cx': config['rym']['google_search_engine_id'].get(),
@@ -73,27 +72,33 @@ def rym_query(artist, album):
             continue
         pagemap = item['pagemap']
 
+        data['snippet'] = item['snippet']
+        data['link'] = item['link']
+
         if 'musicalbum' in pagemap:
-            assert(len(pagemap['musicalbum']) == 1)
+            if len(pagemap['musicalbum']) > 1:
+                log.warning("unexpected count for musicalbum in %s" % data['link'])
+
             musicalbum = pagemap['musicalbum'][0]
             data['albumname'] = musicalbum['name']
             data['albumtracks'] = int(musicalbum.get('numtracks', 0))
             data['albumgenre'] = musicalbum.get('genre', '')
 
         if 'musicgroup' in pagemap:
-            assert(len(pagemap['musicgroup']) == 1)
+            if len(pagemap['musicgroup']) > 1:
+                log.warning("unexpected count for musicgroup in %s" % data['link'])
+
             group = pagemap['musicgroup'][0]
             data['groupname'] = group['name']
 
         if 'aggregaterating' in pagemap:
-            assert(len(pagemap['aggregaterating']) == 1)
+            if len(pagemap['aggregaterating']) > 1:
+                log.warning("unexpected count for aggregaterating in %s" % data['link'])
             agg = pagemap['aggregaterating'][0]
 
             data['ratingcount'] = int(agg['ratingcount'])
             data['ratingvalue'] = float(agg['ratingvalue'])
 
-        data['snippet'] = item['snippet']
-        data['link'] = item['link']
         items.append(data)
 
     for item in items:
