@@ -10,12 +10,12 @@ API_URL = 'https://customsearch.googleapis.com/customsearch/v1/siterestrict'
 class RymPlugin(plugins.BeetsPlugin):
     def __init__(self):
         super().__init__()
-        config['rym'].add({
+        self.config.add({
             'auto': True,
             'google_api_key': '',
             'google_search_engine_id': '',
         })
-        config['rym']['google_api_key'].redact = True
+        self.config['google_api_key'].redact = True
 
         self.album_types = {
             'rym_url': types.STRING,
@@ -24,7 +24,7 @@ class RymPlugin(plugins.BeetsPlugin):
             'rym_rating_value': types.Float(2),
         }
 
-        if config['auto']:
+        if self.config['auto']:
             self.register_listener('album_imported', self.import_rym)
 
     def commands(self):
@@ -62,8 +62,8 @@ class RymPlugin(plugins.BeetsPlugin):
 def rym_query(artist, album, log):
     params = {
         'q': ' '.join([artist, album]),
-        'cx': config['rym']['google_search_engine_id'].get(),
-        'key': config['rym']['google_api_key'].get(),
+        'cx': self.config['google_search_engine_id'].get(),
+        'key': self.config['google_api_key'].get(),
     }
     r = requests.get(API_URL, params=params)
     result = r.json()
