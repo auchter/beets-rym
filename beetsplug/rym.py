@@ -27,26 +27,27 @@ class RymPlugin(plugins.BeetsPlugin):
         cmd = ui.Subcommand('rym', help='Import genres and ratings from RYM')
 
         def func(lib, opts, args):
-            import_rym(lib, ui.decargs(args), self._log)
+            query = ui.decargs(args)
+            albums = lib.albums(query)
+            for album in albums:
+                self.import_rym(lib, album)
 
         cmd.func = func
         return [cmd]
 
-
-def import_rym(lib, query, log):
-    albums = lib.albums(query)
-    for album in albums:
+    def import_rym(self, lib, album):
         artist = album['albumartist']
         album_name = album['album']
 
         if album.get('rym_url', '') != '':
-            log.warning(f"skipping {artist} - {album_name} since rym_url is populated")
-            continue
+            self._log.debug(f"skipping {artist} - {album_name} since rym_url is populated")
+            return
 
         result = rym_query(artist, album_name, log)
         if result is None:
-            log.warning(f"No result for {artist} - {album_name}")
-            continue
+            self._log.warning(f"No result for {artist} - {album_name}")
+            return
+
         album['rym_url'] = result['link']
         album['rym_genre'] = result.get('albumgenre', '')
         album['rym_rating_count'] = result.get('ratingcount', 0)
