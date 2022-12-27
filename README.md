@@ -26,6 +26,8 @@ Run `beet rym [query]` to fetch info for all albums matching the query.
 
 ## Configuration
 
+### Search API
+
 This plugin requires you to create a Google Custom Search API with certain
 settings. You can do this from the [Programmable Search Engine Control Panel](https://programmablesearchengine.google.com/controlpanel/all).
 
@@ -41,4 +43,10 @@ Steps:
 - Note the "Search Engine ID", this is `google_search_engine_id` in the beets-rym configuration
 - Obtain an API key, this is `google_api_key` in the beets-rym configuration
 
-In your config file, add a `[rym]` section and configure the `google_search_engine_id` and `google_api_key` keys appropriately.
+### beets config
+
+In your config file, add a `[rym]` section. The following options are supported:
+
+- `auto` (default: `true`): Automatically fetch info for newly imported albums
+- `google_api_key`: The API key from the prior section
+- `google_search_engine_id`: The Search Engine ID from the prior section
